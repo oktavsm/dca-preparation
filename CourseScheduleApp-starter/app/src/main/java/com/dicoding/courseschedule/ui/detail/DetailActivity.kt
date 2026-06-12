@@ -3,8 +3,10 @@ package com.dicoding.courseschedule.ui.detail
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.ViewModelProvider
 import com.dicoding.courseschedule.R
 import com.dicoding.courseschedule.data.Course
 import com.dicoding.courseschedule.util.DayName.Companion.getByNumber
@@ -20,10 +22,12 @@ class DetailActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_detail)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         val courseId = intent.getIntExtra(COURSE_ID, 0)
         val factory = DetailViewModelFactory.createFactory(this, courseId)
-
+        viewModel = ViewModelProvider(this, factory).get(DetailViewModel::class.java)
+        viewModel.course.observe(this, this::showCourseDetail)
 
     }
 
@@ -33,6 +37,10 @@ class DetailActivity : AppCompatActivity() {
             val dayName = getByNumber(day)
             val timeFormat = String.format(timeString, dayName, startTime, endTime)
 
+            findViewById<TextView>(R.id.tv_course_name).text = courseName
+            findViewById<TextView>(R.id.tv_time).text = timeFormat
+            findViewById<TextView>(R.id.tv_lecturer).text = lecturer
+            findViewById<TextView>(R.id.tv_note).text = note
         }
     }
 
@@ -43,6 +51,9 @@ class DetailActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
+            android.R.id.home -> {
+                finish()
+            }
             R.id.action_delete -> {
                 AlertDialog.Builder(this).apply {
                     setMessage(getString(R.string.delete_alert))
