@@ -6,10 +6,17 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.app.AppCompatDelegate
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.SwitchPreference
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
+import androidx.work.workDataOf
 import com.dicoding.todoapp.R
+import com.dicoding.todoapp.notification.NotificationWorker
+import com.dicoding.todoapp.utils.NOTIFICATION_CHANNEL_ID
+import com.dicoding.todoapp.utils.NOTIFICATION_WORK_NAME
+import java.util.concurrent.TimeUnit
 
 class SettingsActivity : AppCompatActivity() {
 
@@ -49,9 +56,24 @@ class SettingsActivity : AppCompatActivity() {
             setPreferencesFromResource(R.xml.root_preferences, rootKey)
 
             val prefNotification = findPreference<SwitchPreference>(getString(R.string.pref_key_notify))
-            prefNotification?.setOnPreferenceChangeListener { preference, newValue ->
+            prefNotification?.setOnPreferenceChangeListener { _, newValue ->
                 val channelName = getString(R.string.notify_channel_name)
-                //TODO 13 : Schedule and cancel daily reminder using WorkManager with data channelName
+                val workManager = WorkManager.getInstance(requireContext())
+                if (newValue as Boolean) {
+                    val workRequest = PeriodicWorkRequestBuilder<NotificationWorker>(1, TimeUnit.DAYS)
+                        .setInputData(
+                            workDataOf(NOTIFICATION_CHANNEL_ID to channelName)
+                        )
+                        .build()
+
+                    workManager.enqueueUniquePeriodicWork(
+                        NOTIFICATION_WORK_NAME,
+                        ExistingPeriodicWorkPolicy.UPDATE,
+                        workRequest
+                    )
+                } else {
+                    workManager.cancelUniqueWork(NOTIFICATION_WORK_NAME)
+                }
                 true
             }
 

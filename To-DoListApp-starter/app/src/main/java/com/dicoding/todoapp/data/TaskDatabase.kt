@@ -1,8 +1,10 @@
 package com.dicoding.todoapp.data
 
 import android.content.Context
+import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.sqlite.db.SupportSQLiteDatabase
 import com.dicoding.todoapp.R
 import org.json.JSONArray
 import org.json.JSONException
@@ -11,7 +13,7 @@ import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStreamReader
 
-//TODO 3 : Define room database class and prepopulate database using JSON
+@Database(entities = [Task::class], version = 1, exportSchema = false)
 abstract class TaskDatabase : RoomDatabase() {
 
     abstract fun taskDao(): TaskDao
@@ -27,25 +29,33 @@ abstract class TaskDatabase : RoomDatabase() {
                     context.applicationContext,
                     TaskDatabase::class.java,
                     "task.db"
-                ).build()
+                )
+                    .addCallback(object : RoomDatabase.Callback() {
+                        override fun onCreate(db: SupportSQLiteDatabase) {
+                            super.onCreate(db)
+                            fillWithStartingData(context.applicationContext, db)
+                        }
+                    })
+                    .build()
                 INSTANCE = instance
                 instance
             }
         }
 
-        private fun fillWithStartingData(context: Context, dao: TaskDao) {
+        private fun fillWithStartingData(context: Context, db: SupportSQLiteDatabase) {
             val task = loadJsonArray(context)
             try {
                 if (task != null) {
                     for (i in 0 until task.length()) {
                         val item = task.getJSONObject(i)
-                        dao.insertAll(
-                            Task(
+                        db.execSQL(
+                            "INSERT INTO tasks (id, title, description, dueDate, completed) VALUES (?, ?, ?, ?, ?)",
+                            arrayOf(
                                 item.getInt("id"),
                                 item.getString("title"),
                                 item.getString("description"),
                                 item.getLong("dueDate"),
-                                item.getBoolean("completed")
+                                if (item.getBoolean("completed")) 1 else 0
                             )
                         )
                     }
