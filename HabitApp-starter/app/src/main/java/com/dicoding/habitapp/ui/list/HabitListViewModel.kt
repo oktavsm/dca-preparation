@@ -37,8 +37,8 @@ class HabitListViewModel(private val habitRepository: HabitRepository) : ViewMod
 
     fun deleteHabit(habit: Habit) {
         habitRepository.deleteHabit(habit)
-        _snackbarText.value = Event(R.string.habit_deleted)
         _undo.value = Event(habit)
+        _snackbarText.value = Event(R.string.habit_deleted)
     }
 
     fun insert(habit: Habit) {

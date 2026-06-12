@@ -1,5 +1,6 @@
 package com.dicoding.habitapp.ui.list
 
+import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
@@ -14,13 +15,13 @@ class HabitAdapter(
     private val onClick: (Habit) -> Unit
 ) : PagingDataAdapter<Habit, HabitAdapter.HabitViewHolder>(DIFF_CALLBACK) {
 
-    //TODO 8 : Create and initialize ViewHolder
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): HabitViewHolder {
-        throw NotImplementedError("Not yet implemented")
+        val view = LayoutInflater.from(parent.context).inflate(R.layout.habit_item, parent, false)
+        return HabitViewHolder(view)
     }
 
     override fun onBindViewHolder(holder: HabitViewHolder, position: Int) {
-        //TODO 9 : Get data and bind them to ViewHolder
+        getItem(position)?.let { holder.bind(it) }
     }
 
     inner class HabitViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -36,6 +37,13 @@ class HabitAdapter(
             tvTitle.text = habit.title
             tvStartTime.text = habit.startTime
             tvMinutes.text = habit.minutesFocus.toString()
+            ivPriority.setImageResource(
+                when (habit.priorityLevel) {
+                    itemView.context.getString(R.string.high) -> R.drawable.ic_priority_high
+                    itemView.context.getString(R.string.medium) -> R.drawable.ic_priority_medium
+                    else -> R.drawable.ic_priority_low
+                }
+            )
             itemView.setOnClickListener {
                 onClick(habit)
             }
