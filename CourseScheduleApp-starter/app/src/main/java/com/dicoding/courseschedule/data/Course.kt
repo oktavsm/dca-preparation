@@ -1,7 +1,11 @@
 package com.dicoding.courseschedule.data
 
-//TODO 1 : Define a local database table using the schema in app/schema/course.json
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+
+@Entity(tableName = "course")
 data class Course(
+    @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
     val courseName: String,
     val day: Int,

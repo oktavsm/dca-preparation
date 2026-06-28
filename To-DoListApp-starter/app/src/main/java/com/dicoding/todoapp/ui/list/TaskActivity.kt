@@ -11,6 +11,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.paging.PagingData
 import androidx.recyclerview.widget.ItemTouchHelper
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.dicoding.todoapp.R
 import com.dicoding.todoapp.data.Task
@@ -33,25 +34,30 @@ class TaskActivity : AppCompatActivity() {
         setContentView(R.layout.activity_task)
         setSupportActionBar(findViewById(R.id.toolbar))
 
-        findViewById<FloatingActionButton>(R.id.fab).setOnClickListener { view ->
+        findViewById<FloatingActionButton>(R.id.fab).setOnClickListener {
             val addIntent = Intent(this, AddTaskActivity::class.java)
             startActivity(addIntent)
         }
 
-        //TODO 6 : Initiate RecyclerView with LayoutManager, Adapter, and update database when onCheckChange
-
-        initAction()
-
         val factory = ViewModelFactory.getInstance(this)
         taskViewModel = ViewModelProvider(this, factory).get(TaskViewModel::class.java)
 
+        recycler = findViewById(R.id.rv_task)
+        taskAdapter = TaskAdapter { task, isCompleted ->
+            taskViewModel.completeTask(task, isCompleted)
+        }
+        recycler.layoutManager = LinearLayoutManager(this)
+        recycler.adapter = taskAdapter
+
+        initAction()
+
         taskViewModel.tasks.observe(this, Observer(this::updateData))
 
-        //TODO 15 : Fixing bug : snackBar not show when task completed
+        taskViewModel.snackbarText.observe(this, Observer(this::showSnackBar))
     }
 
     private fun updateData(task: PagingData<Task>) {
-        //TODO 7 : Submit PagingData to adapter
+        taskAdapter.submitData(lifecycle, task)
     }
 
     private fun showSnackBar(eventMessage: Event<Int>) {

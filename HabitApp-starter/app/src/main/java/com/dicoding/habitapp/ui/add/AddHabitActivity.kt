@@ -41,10 +41,10 @@ class AddHabitActivity : AppCompatActivity(), TimePickerFragment.DialogTimeListe
         return when (item.itemId) {
             R.id.action_save -> {
                 val title = findViewById<EditText>(R.id.add_ed_title).text.toString()
-                val minutesFocus = findViewById<EditText>(R.id.add_ed_minutes_focus).text.toString().toLong()
+                val minutesFocus = findViewById<EditText>(R.id.add_ed_minutes_focus).text.toString().toLongOrNull()
                 val startTime = findViewById<TextView>(R.id.add_tv_start_time).text.toString()
                 val priorityLevel = findViewById<Spinner>(R.id.sp_priority_level).selectedItem.toString()
-                if (title.isNotEmpty()) {
+                if (title.isNotEmpty() && minutesFocus != null && startTime != getString(R.string.start_time)) {
                     val habit = Habit(title = title, minutesFocus = minutesFocus, startTime = startTime, priorityLevel = priorityLevel)
                     viewModel.saveHabit(habit)
                     finish()
@@ -57,7 +57,7 @@ class AddHabitActivity : AppCompatActivity(), TimePickerFragment.DialogTimeListe
         }
     }
 
-    fun showTimePicker(view: View) {
+    fun showTimePicker(@Suppress("UNUSED_PARAMETER") view: View) {
         val dialogFragment = TimePickerFragment()
         dialogFragment.show(supportFragmentManager, "timePicker")
     }
